@@ -129,4 +129,4 @@ public function up(): void
 }
 ~~~
 
-E com o passar do tempo, o projeto iria crescendo até ter a implementação de criação de notas ficais.
+E com o passar do tempo, o projeto iria crescendo até ter a implementação de criação de notas fiscais.
