@@ -4,6 +4,18 @@
 
 A estrutura do projeto foi baseada no curso Laravel Hardcore da [Codecasts](https://github.com/codecasts/confee-api), alterei bastante coisas do código dele seguindo o mesmo padrão que o curso determinou.
 
+## Domains
+
+Na pasta Domains irá ficar todos os dominios, essa camada é responsavel por lidar com o banco de dados.
+
+## Support
+
+Na pasta Support irá ficar todas as classes que irão auxiliar o projeto, basicamente aqui vai ser a base de tudo.
+
+## Units
+
+Na pasta Units irá ficar todas as unidades, essa camada é responsavel das requisições da aplicação como: rotas, controllers, requests e etc.
+
 ## Docker
 
 Neste projeto foi utilizado o docker como ambiente de desenvolvimento e nele utilizeo as seguintes tecnologias:
@@ -89,27 +101,32 @@ public function up(): void
 }
 ~~~
 
-Como o projeto não foi concluído, minha ideia iria criar um outra tabela dos equipamentos que o técnico reparou.
+## Ideia para o projeto
 
+Como o projeto não foi concluído e percebi que iria ter problemas no futuro no formato que estava sendo desenvolvido comecei à pensar em melhorias como:
 
-A tabela abaixo não existe, era apenas um pensamento de como iria construir.
+- Separar responsabilidade da ordem de serviço, iria simplificar deixando apenas informações básicas na ordem como: data, tipo de serviço, status, prioridade.
+- Iria criar uma tabela de equipamentos, vou deixar abixo como que seria feito a tabela.
+- Iria criar uma tabela de fotos para os equipamentos, então todos os equipamentos que foram cadastrados na ordem de serviço, o técnico teria que ter fotos de antes e depois do problema resolvido.
+- Iria criar uma tabela do problema do equipamento, como anteriormente, o problema ficava na ordem agora iria ficar no equipamento. (campos: found_problem e service_description).
+
 ~~~php
 public function up(): void
 {
   $this->schema->create('equipaments', function (Blueprint $table) {
     $table->uuid('id')->primary();
     $table->uuid('order_id');
-    //$table->uuid('technician'); Depois vai ser utilizado para adicionar um técnico existente, talvez criar uma migrations só para adicionar esse campo.
-    $table->unsignedBigInteger('order_number')->default(0);
-    $table->string('type_service');
-    $table->enum('status', ['canceled', 'pending', 'completed'])->default('pending');
-    $table->enum('priority', ['low', 'medium', 'high'])->default('low');
-    $table->text('reported_problem')->nullable();
-    $table->text('found_problem')->nullable();
-    $table->longText('service_description')->nullable();
+    $table->string('air_conditioning_model');
+    $table->string('capacity_btus');
+    $table->string('condenser_model_code');
+    $table->string('evaporator_model_code');
+    $table->string('refrigerant_gas');
+    $table->string('voltage');
     $table->timestamps();
 
     $table->foreign('order_id')->references('id')->on('customers')->onDelete('CASCADE');
   });
 }
 ~~~
+
+E com o passar do tempo, o projeto iria crescendo até ter a implementação de criação de notas ficais.
