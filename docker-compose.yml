@@ -1,0 +1,92 @@
+version: '3.7'
+
+services:
+  api-jtrarcondicionado-php:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    image: php:7.4.2-fpm-alpine
+    container_name: api-jtrarcondicionado-php
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: api-jtrarcondicionado-php
+      SERVICE_TAGS: dev
+      VIRTUAL_HOST: api.jtrarcondicionado.dev
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - ./docker/php/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+    networks:
+      - api-jtrarcondicionado-network
+    links:
+      - api-jtrarcondicionado-mysql
+      - api-jtrarcondicionado-redis
+
+  api-jtrarcondicionado-nginx:
+    image: nginx:alpine
+    container_name: api-jtrarcondicionado-nginx
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/:/etc/nginx/conf.d
+    networks:
+      - api-jtrarcondicionado-network
+
+  api-jtrarcondicionado-mysql:
+    image: mysql:5.7
+    container_name: api-jtrarcondicionado-mysql
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_DATABASE=jtrarcondicionado
+      - MYSQL_ROOT_PASSWORD=jtrarcondicionado
+      - MYSQL_USER=jtrarcondicionado
+      - MYSQL_PASSWORD=jtrarcondicionado
+    volumes:
+      - api-jtrarcondicionado-mysql-data:/var/lib/mysql
+      - ./docker/mysql/default.cnf:/etc/mysql/my.cnf
+    networks:
+      - api-jtrarcondicionado-network
+
+  api-jtrarcondicionado-queue:
+    image: php:7.4-fpm-alpine
+    container_name: api-jtrarcondicionado-queue
+    command: php artisan queue:listen
+    restart: unless-stopped
+    volumes:
+      - .:/var/www
+    networks:
+      - api-jtrarcondicionado-network
+    links:
+      - api-jtrarcondicionado-mysql
+      - api-jtrarcondicionado-redis
+
+  api-jtrarcondicionado-redis:
+    image: redis:latest
+    container_name: api-jtrarcondicionado-redis
+    command: redis-server --requirepass jtrarcondicionado
+    restart: unless-stopped
+    volumes:
+      - api-jtrarcondicionado-redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - api-jtrarcondicionado-network
+
+networks:
+  api-jtrarcondicionado-network:
+    driver: bridge
+
+volumes:
+  api-jtrarcondicionado-mysql-data:
+    driver: local
+
+  api-jtrarcondicionado-redis-data:
+    driver: local
